@@ -5,7 +5,7 @@
 ---
 
 ## ✨ Key Features
-- **Student Authentication Portals:** Users securely log in using strict organization email domain verification (e.g., `@alliance.edu.in`), preventing outsiders from spamming the system.
+- **Student Authentication Portals:** Users securely log in using strict organization email domain verification (e.g., `@ced.alliance.edu.in`), preventing outsiders from spamming the system.
 - **Modern UI/UX:** Built using Tailwind CSS, featuring glassmorphism design, interactive loading states, smooth modal transitions, and non-intrusive toast notification alerts.
 - **Reporting System:** Finders can easily log lost items with categories, locations, and photo uploads complete with live thumbnail previews.
 - **Verification Logic:** Finders can list a "Secret Detail" that is hidden from the public feed. When claiming, users must provide verification proof matching this secret detail to prove ownership.
@@ -48,8 +48,8 @@ Open your browser and navigate to `http://127.0.0.1:5001`.
 
 ### 4. Demo Credentials
 To access the Admin view, navigate to `/admin_login` and use the following MVP testing credentials:
-- **Email:** `admin@alliance.edu.in`
-- **Password:** `admin123`
+- **Email:** `vishvanthbtech24@ced.alliance.edu.in`
+- **Password:** `Life@789`
 
 ---
 
