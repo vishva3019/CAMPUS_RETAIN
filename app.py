@@ -7,6 +7,7 @@ from flask import Flask, render_template, request, jsonify, session, redirect, u
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
+from twilio.rest import Client
 
 app = Flask(__name__)
 app.secret_key = 'campus_retain_super_secret_hackathon_key'
@@ -21,6 +22,11 @@ MAIL_SERVER = "smtp.gmail.com"
 MAIL_PORT = 587
 MAIL_USERNAME = "vishvanth193049@gmail.com" 
 MAIL_PASSWORD = "Life@789" # 16-character App Password
+
+# TWILIO SMS SETUP (Hackathon Trial)
+TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', 'ACdde18da326135e15bad42c9b1d9bc586')
+TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '90bf6a3f18206bb5c2dd3989f0d7726d')
+TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER', '+12603668647')
 
 db = SQLAlchemy(app)
 
@@ -70,6 +76,30 @@ def send_email(receiver, subject, body):
         print(f"Mail Error: {e}")
         return False
 
+def send_sms(receiver, body):
+    try:
+        if not receiver or receiver.strip() == '':
+            return False
+            
+        # Clean and auto-format phone number for Twilio
+        clean_num = ''.join(filter(str.isdigit, receiver))
+        if len(clean_num) == 10:
+            receiver = f"+91{clean_num}"
+        elif not receiver.startswith('+'):
+            receiver = f"+{clean_num}"
+            
+        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+        message = client.messages.create(
+            body=body,
+            from_=TWILIO_PHONE_NUMBER,
+            to=receiver
+        )
+        print(f"SMS Sent: {message.sid}")
+        return True
+    except Exception as e:
+        print(f"SMS Error: {e}")
+        return False
+
 # --- DECORATORS ---
 def login_required(f):
     @wraps(f)
@@ -94,8 +124,8 @@ def login():
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
 
-        if not email.endswith('@alliance.edu.in'):
-            return render_template('login.html', error="Only @alliance.edu.in organization emails are allowed.")
+        if not email.endswith('@ced.alliance.edu.in'):
+            return render_template('login.html', error="Only @ced.alliance.edu.in organization emails are allowed.")
 
         user = User.query.filter_by(email=email).first()
 
@@ -122,7 +152,7 @@ def admin_login():
         password = request.form.get('password', '')
 
         # Hardcoded Admin credentials for MVP
-        if email == 'admin@alliance.edu.in' and password == 'admin123':
+        if email == 'vishvanthbtech24@ced.alliance.edu.in' and password == 'Life@789':
             session['is_admin'] = True
             session['user_email'] = email
             return redirect(url_for('admin_dashboard'))
@@ -183,6 +213,7 @@ def claim_item():
         if item:
             item.status = 'Pending'
             send_email(data['student_email'], "Claim Received", f"We received your claim for {item.name}. Verification is in progress.")
+            send_sms(data.get('phone', ''), f"CampusRetain: Your claim for {item.name} was submitted successfully. Please wait for further notification.")
 
         new_claim = Claim(
             item_id=data['item_id'],
@@ -206,6 +237,8 @@ def approve_claim(item_id):
         latest = Claim.query.filter_by(item_id=item_id).order_by(Claim.timestamp.desc()).first()
         if latest:
             send_email(latest.student_email, "Item Ready", f"APPROVED! Please collect {item.name} from the Student Center.")
+            if latest.phone:
+                send_sms(latest.phone, f"CampusRetain: Good news! Your claim is APPROVED. Please collect your item at the DOSS office by verifying your identity.")
         db.session.commit()
         return jsonify({"status": "success"})
     return jsonify({"status": "error"}), 404
