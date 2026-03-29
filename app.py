@@ -221,5 +221,6 @@ def delete_item(item_id):
     return jsonify({"status": "error"}), 404
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5001))
+    # Support for Zoho Catalyst and standard PaaS (Render/Heroku)
+    port = int(os.environ.get('X_ZOHO_CATALYST_LISTEN_PORT', os.environ.get('PORT', 9000)))
     app.run(host='0.0.0.0', port=port, debug=False)
