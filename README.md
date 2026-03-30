@@ -4,21 +4,32 @@
 
 ---
 
+## 👥 Team Codex
+Developed with ❤️ by **Team Codex** for the Hackathon.
+
+### Meet the Team
+- **Vishvanth** – Team Lead
+- **Madhusudhan Ramshetty** – Member
+- **Varsha HC** – Member
+
+---
+
 ## ✨ Key Features
 - **Student Authentication Portals:** Users securely log in using strict organization email domain verification (e.g., `@ced.alliance.edu.in`), preventing outsiders from spamming the system.
 - **Modern UI/UX:** Built using Tailwind CSS, featuring glassmorphism design, interactive loading states, smooth modal transitions, and non-intrusive toast notification alerts.
-- **Reporting System:** Finders can easily log lost items with categories, locations, and photo uploads complete with live thumbnail previews.
+- **Reporting System (Base64 Native):** Finders can log lost items with categories, locations, and photo uploads. Images are securely converted into Base64 strings and stored directly in the database to prevent ephemeral storage wipes.
 - **Verification Logic:** Finders can list a "Secret Detail" that is hidden from the public feed. When claiming, users must provide verification proof matching this secret detail to prove ownership.
 - **Admin Dashboard:** A dedicated, secure dashboard for administrators to view overarching statistics, review queued claims, and securely approve or delete items from the database.
-- **Email Notifications:** Automated email dispatch via SMTP alerts students the moment their claim is submitted or approved by an administrator for pickup.
+- **Automated Notifications:** 
+  - **Twilio SMS:** Direct SMS notification system instantly pings claim statuses directly to the user's mobile device via Twilio.
 
 ---
 
 ## 🛠️ Tech Stack
 - **Backend:** Python 3, Flask
-- **Database:** SQLite & SQLAlchemy (ORM)
+- **Database:** PostgreSQL capable (via SQLAlchemy ORM) / Fallback to SQLite
 - **Frontend:** HTML5, Vanilla JavaScript, Tailwind CSS (CDN)
-- **Deployment Ready:** Configured with `gunicorn`, dynamic port binding, and `requirements.txt` for fast PaaS cloud deployment (Render/Heroku/Vercel).
+- **Deployment & Cloud:** Fully configured for **Zoho Catalyst AppSail** serverless deployment.
 
 ---
 
@@ -26,8 +37,6 @@
 
 ### 1. Requirements
 Ensure you have Python 3 and `pip` installed on your machine.
-- macOS/Linux: `python3`
-- Windows: `python`
 
 ### 2. Installation
 Clone the repository and install the required dependencies:
@@ -44,7 +53,7 @@ python3 app.py
 ```
 *(On Windows, run `python app.py`)*
 
-Open your browser and navigate to `http://127.0.0.1:5001`.
+Open your browser and navigate to `http://127.0.0.1:9000`.
 
 ### 4. Demo Credentials
 To access the Admin view, navigate to `/admin_login` and use the following MVP testing credentials:
@@ -53,15 +62,20 @@ To access the Admin view, navigate to `/admin_login` and use the following MVP t
 
 ---
 
-## ☁️ Deployment Guide
-This application is fully pre-configured for platforms like **Render.com**. 
-1. Create a "New Web Service" on Render and link your GitHub Repo.
-2. Select **Python 3** as the environment.
-3. **Build Command:** `pip install -r requirements.txt`
-4. **Start Command:** `gunicorn app:app`
+## ☁️ Deployment Guide (Zoho Catalyst)
+This application is designed specifically to scale seamlessly on **Zoho Catalyst AppSail**. 
 
-*Note: Free cloud hosting tiers utilize ephemeral disks, which means local SQLite databases (like `campus_retain.db`) and uploaded images will reset on server restarts. For persistent production, upgrade to a managed PostgreSQL database.*
+### 1. Environment Variables Configuration
+Because serverless environments run on ephemeral containers, the local SQLite database resets on inactivity sleep. To maintain data persistency, add the underlying integrations to your **Zoho Catalyst AppSail -> Configuration -> Environment Variables**:
+- `DATABASE_URL`: `postgresql://user:password@host/dbname`
+- `TWILIO_ACCOUNT_SID`: `[Your Twilio SID]`
+- `TWILIO_AUTH_TOKEN`: `[Your Twilio Token]`
+- `TWILIO_PHONE_NUMBER`: `[Your Twilio Number]`
 
----
-
-*Developed for the Hackathon.*
+### 2. Deploying to the Cloud
+Run the included deployment script located in your root directory:
+```bash
+chmod +x deploy.sh
+./deploy.sh
+```
+This script automatically compiles your backend packages, static layouts, and syncs them directly securely to your cloud Zoho AppSail component.
