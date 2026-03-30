@@ -71,7 +71,7 @@
                     <tr class="hover:bg-slate-50 transition duration-150">
                         <td class="p-5">
                             <div class="flex items-center gap-4">
-                                <img src="{{ url_for('static', filename='uploads/' + item.image_path) if item.image_path else 'https://via.placeholder.com/40' }}" class="w-12 h-12 rounded-lg object-cover bg-slate-100 shadow-sm border border-slate-200">
+                                <img src="{{ item.image_data if item.image_data else 'https://via.placeholder.com/40' }}" class="w-12 h-12 rounded-lg object-cover bg-slate-100 shadow-sm border border-slate-200">
                                 <div>
                                     <div class="font-bold text-slate-900">{{ item.name }}</div>
                                     <div class="text-xs font-medium text-slate-500 flex items-center gap-1 mt-1">
