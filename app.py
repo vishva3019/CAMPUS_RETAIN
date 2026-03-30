@@ -1,6 +1,7 @@
 import os
 import smtplib
 from functools import wraps
+import base64
 from datetime import datetime
 from email.mime.text import MIMEText
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
@@ -13,7 +14,11 @@ app = Flask(__name__)
 app.secret_key = 'campus_retain_super_secret_hackathon_key'
 
 # --- CONFIG ---
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///campus_retain.db'
+db_url = os.environ.get('DATABASE_URL', 'sqlite:///campus_retain.db')
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
 
@@ -42,7 +47,7 @@ class Item(db.Model):
     category = db.Column(db.String(50))
     location = db.Column(db.String(100))
     secret_detail = db.Column(db.Text)
-    image_path = db.Column(db.String(200))
+    image_data = db.Column(db.Text)
     status = db.Column(db.String(20), default='Available')
     date_found = db.Column(db.DateTime, default=datetime.utcnow)
     claims = db.relationship('Claim', backref='item', lazy=True, cascade="all, delete-orphan")
@@ -186,17 +191,16 @@ def admin_dashboard():
 def report_item():
     try:
         f = request.files.get('image')
-        fname = None
+        image_b64 = None
         if f and f.filename != '':
-            fname = secure_filename(f"{datetime.now().timestamp()}_{f.filename}")
-            f.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
+            image_b64 = "data:" + f.content_type + ";base64," + base64.b64encode(f.read()).decode('utf-8')
 
         new_item = Item(
             name=request.form['name'],
             category=request.form.get('category', 'Other'),
             location=request.form['location'],
             secret_detail=request.form.get('secret_detail', ''),
-            image_path=fname
+            image_data=image_b64
         )
         db.session.add(new_item)
         db.session.commit()
